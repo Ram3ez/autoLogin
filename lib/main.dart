@@ -17,7 +17,10 @@ class MainApp extends StatelessWidget {
 }
 
 class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _LoginPageState createState() => _LoginPageState();
 }
 
@@ -57,12 +60,12 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      final bool success = await _loginService.performLogin(
+      final String? errorMessage = await _loginService.performLogin(
         _usernameController.text,
         _passwordController.text,
       );
 
-      if (success) {
+      if (errorMessage == null) {
         setState(() {
           _isLoading = false;
           _statusMessage = "Login Successful!";
@@ -70,7 +73,7 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         setState(() {
           _isLoading = false;
-          _statusMessage = "Logged Out. Try again";
+          _statusMessage = errorMessage;
         });
       }
     } catch (e) {

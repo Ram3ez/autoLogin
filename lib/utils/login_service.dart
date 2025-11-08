@@ -10,8 +10,8 @@ class LoginService {
   // This is a common URL that captive portals intercept.
   // When you request this, the portal should redirect you to the
   // real login page, including all the query parameters.
-  final String _portalCheckUrl =
-      "https://smartzone1.nitpy.ac.in:9998/SubscriberPortal/login";
+  final String _portalCheckUrl = "https://192.168.30.8:9998/SubscriberPortal/";
+  //"https://smartzone1.nitpy.ac.in:9998/SubscriberPortal/login";
 
   LoginService()
     // Creates a client that bypasses SSL certificate checks.
@@ -25,8 +25,8 @@ class LoginService {
 
   /// Attempts to log in to the portal with the given credentials.
   ///
-  /// Returns `true` for success, `false` for any failure.
-  Future<bool> performLogin(String username, String password) async {
+  /// Returns `null` for success, or an error message string for any failure.
+  Future<String?> performLogin(String username, String password) async {
     // Add headers to mimic a real web browser
     final headers = {
       "User-Agent":
@@ -35,7 +35,7 @@ class LoginService {
 
     try {
       // --- Step 1: GET request to detect and get the portal URL ---
-      print("Connecting to $_portalCheckUrl to detect portal...");
+
       final checkUri = Uri.parse(_portalCheckUrl);
 
       final responseGet = await _client.get(checkUri, headers: headers);
@@ -44,45 +44,43 @@ class LoginService {
       // We can get the *final* URL (the login page) from the response.
       final loginPageUri = responseGet.request!.url;
 
-      print("Redirected to login page: $loginPageUri");
-
       if (responseGet.statusCode != 200) {
-        print("Failed to fetch login page: ${responseGet.statusCode}");
-        return false;
+        final errorMessage =
+            "Failed to fetch login page: ${responseGet.statusCode}";
+        return errorMessage;
       }
-
-      print("Successfully fetched the login page.");
 
       // --- Step 2: Extract dynamic form values ---
       final document = html.parse(responseGet.body);
+      bool isLogout = false;
 
       // This is the data we will send in our POST request
       final payload = {'UE-Username': username, 'UE-Password': password};
 
       final loginForm = document.querySelector('form[name="loginForm"]');
       if (loginForm == null) {
-        print("Error: Could not find the login form on the page.");
-        return false;
+        const errorMessage =
+            "Error: Could not find the login form on the page.";
+
+        return errorMessage;
       }
 
-      print("Found login form. Extracting hidden tokens...");
       final hiddenInputs = loginForm.querySelectorAll('input[type="hidden"]');
 
       for (var inputTag in hiddenInputs) {
         final name = inputTag.attributes['name'];
         final value = inputTag.attributes['value'];
         if (name != null && value != null) {
-          print("Found hidden field: $name = $value");
+          if (name == "RequestType" && value == "Logout") {
+            isLogout = true;
+          }
+
           payload[name] = value;
         }
       }
 
-      if (!payload.containsKey('LoginFromForm')) {
-        print("Warning: Could not find a 'LoginFromForm' token.");
-      }
-
       // --- Step 3: POST request to submit the login ---
-      print("\nSending POST request to log in...");
+
       // We MUST POST back to the full login page URI,
       // including all its query parameters
       final responsePost = await _client.post(
@@ -92,26 +90,32 @@ class LoginService {
       );
 
       if (responsePost.statusCode != 200) {
-        print("Login POST request failed: ${responsePost.statusCode}");
-        return false;
+        final errorMessage =
+            "Login POST request failed: ${responsePost.statusCode}";
+
+        return errorMessage;
       }
 
       // --- Step 4: Check if login was successful ---
       final responseBody = responsePost.body;
       if (responseBody.contains("Login successful") ||
           responseBody.contains("Welcome")) {
-        print("Login successful!");
-        return true;
-      } else if (responseBody.contains("Invalid username or password")) {
-        print("Login failed: Invalid username or password.");
-        return false;
+        return null; // Success
+      } else if (isLogout) {
+        return "Logged Out";
+      } else if (responseBody.contains(
+        "Login failed. Please check your login password, and then try again.",
+      )) {
+        const errorMessage = "Invalid username or password.";
+
+        return errorMessage;
       } else {
-        print("Login submitted, but the outcome is unknown.");
-        return false;
+        const errorMessage = "Login submitted, but the outcome is unknown.";
+        return errorMessage;
       }
     } catch (e) {
-      print("An unexpected error occurred: $e");
-      return false;
+      final errorMessage = "An unexpected error occurred: $e";
+      return errorMessage;
     }
   }
 
