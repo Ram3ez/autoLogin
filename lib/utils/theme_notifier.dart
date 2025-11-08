@@ -9,7 +9,7 @@ class ThemeNotifier extends ChangeNotifier {
   ThemeMode get themeMode => _themeMode;
 
   ThemeNotifier() {
-    _themeMode = ThemeMode.system;
+    _themeMode = ThemeMode.light; // Default to light
     _loadFromPrefs();
   }
 
@@ -29,7 +29,12 @@ class ThemeNotifier extends ChangeNotifier {
     if (themeIndex != null) {
       _themeMode = ThemeMode.values[themeIndex];
     } else {
-      _themeMode = ThemeMode.system;
+      // Get system theme if no preference is saved
+      final Brightness platformBrightness =
+          WidgetsBinding.instance.window.platformBrightness;
+      _themeMode = platformBrightness == Brightness.dark
+          ? ThemeMode.dark
+          : ThemeMode.light;
     }
     notifyListeners();
   }
