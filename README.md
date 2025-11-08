@@ -1,4 +1,8 @@
-# NITPY Auto-Login
+
+<div style="display: flex; align-items: center;">
+  <img src="assets/autoLoginRoundedLogo.png" alt="App Logo" width="100" style="margin-right: 20px;">
+  <h1>NITPY Auto-Login</h1>
+</div>
 
 A cross-platform tool built by [**Ram3ez**](https://github.com/Ram3ez) to help NIT Puducherry students automatically log in to the institute's Wi-Fi captive portal. This project provides a mobile app (Flutter) and a desktop script (Python).
 
@@ -96,7 +100,7 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the SOFTWARE.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOTT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
